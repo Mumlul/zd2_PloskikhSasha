@@ -1,0 +1,11 @@
+C:\PLOSKIKH\yp-2\bin\Debug\yp-2.exe.config
+C:\PLOSKIKH\yp-2\bin\Debug\yp-2.exe
+C:\PLOSKIKH\yp-2\bin\Debug\yp-2.pdb
+C:\PLOSKIKH\yp-2\obj\Debug\yp-2.csproj.AssemblyReference.cache
+C:\PLOSKIKH\yp-2\obj\Debug\yp_2.Form1.resources
+C:\PLOSKIKH\yp-2\obj\Debug\yp_2.Properties.Resources.resources
+C:\PLOSKIKH\yp-2\obj\Debug\yp-2.csproj.GenerateResource.cache
+C:\PLOSKIKH\yp-2\obj\Debug\yp-2.csproj.CoreCompileInputs.cache
+C:\PLOSKIKH\yp-2\obj\Debug\yp-2.exe
+C:\PLOSKIKH\yp-2\obj\Debug\yp-2.pdb
+C:\PLOSKIKH\yp-2\obj\Debug\yp-2.csproj.ResolveComReference.cache
