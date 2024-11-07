@@ -5,13 +5,15 @@ using System.Data;
 using System.Diagnostics.Contracts;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 
-using Microsoft.Office.Interop.Excel;
+
 
 using static System.Net.Mime.MediaTypeNames;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
@@ -26,128 +28,295 @@ namespace yp_2
         }
         
         PhoneBook phoneBook = new PhoneBook();
-       
 
-
-
-
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-            PhoneBookLoader.Load(phoneBook);
-            phoneBook.GetAllContacts();
-            foreach (var contact in phoneBook.GetAllContacts())
-            {
-                listBox1.Items.Add(contact.Info());
-            }
-        }
-
+        //обнавляет элементы в листбокс
         public void UpdateList()
         {
-            listBox1.Items.Clear();
-            foreach (var contact in phoneBook.GetAllContacts())
+            try
             {
-                listBox1.Items.Add(contact.Info());
+                listBox1.Items.Clear();
+                foreach (var contact in phoneBook.GetAllContacts())
+                {
+                    listBox1.Items.Add($"{contact.Name}; {contact.Phone}");
+                }
             }
+            catch (Exception ex)
+            {
+
+            }
+           
         }
 
-
+        //Проверка правильности ввода номера
         private void Proverka(object sender, EventArgs e)
         {
-            textBox2.TextChanged -= Proverka;
-            string input = Regex.Replace(textBox2.Text, @"[^\d]", "");
-            if (input.Length > 10)
-            {
-                input = input.Substring(0, 10); 
-            }
-            if (input.Length > 0)
-            {
-                if (input.Length > 3)
-                {
-                    input = $"({input.Substring(0, 3)}){input.Substring(3)}";
-                }
-                if (input.Length > 8)
-                {
-                    input = $"{input.Substring(0, 8)}-{input.Substring(8)}";
-                }
-                if (input.Length > 11)
-                {
-                    input = $"{input.Substring(0, 11)}-{input.Substring(11)}";
-                }
-            }
-            textBox2.Text = input;
-            textBox2.SelectionStart = textBox2.Text.Length;
-            textBox2.TextChanged += Proverka; 
+            Form1.Proverka(textBox2,textBox2,this.Proverka);
         }
 
-        private void Dopavlenie_Contact(object sender, EventArgs e)
+        //Основной метод проверки ввода номера
+        public static void Proverka(TextBox inputTextBox, TextBox outputTextBox, EventHandler eventHandler)
         {
-            phoneBook.AddContact(textBox1.Text, textBox2.Text);
-            PhoneBookLoader.Save(phoneBook.GetAllContacts());
-            listBox1.Items.Add(textBox1.Text+";"+textBox2.Text);
+            try
+            {
+                outputTextBox.TextChanged -= eventHandler;
+                string input = Regex.Replace(inputTextBox.Text, @"[^\d]", "");
+                if (input.Length > 10)
+                {
+                    input = input.Substring(0, 10);
+                }
+                if (input.Length > 0)
+                {
+                    if (input.Length > 3)
+                    {
+                        input = $"({input.Substring(0, 3)}){input.Substring(3)}";
+                    }
+                    if (input.Length > 8)
+                    {
+                        input = $"{input.Substring(0, 8)}-{input.Substring(8)}";
+                    }
+                    if (input.Length > 11)
+                    {
+                        input = $"{input.Substring(0, 11)}-{input.Substring(11)}";
+                    }
+                }
+                outputTextBox.Text = input;
+                outputTextBox.SelectionStart = outputTextBox.Text.Length;
+                outputTextBox.TextChanged += eventHandler;
+            }
+            catch (Exception ex)
+            {
+
+            }
+           
         }
 
-        private void find(object sender, EventArgs e)
+        //Проверка правильности ввода номера
+        private void Proverka2(object sender, EventArgs e)
         {
-            MessageBox.Show(phoneBook.FindContact(textBox3.Text).Info());
-        }
-        string oldn = "";
-        private void Delete(object sender, EventArgs e)
-        {
-            DialogResult result = MessageBox.Show("Удалить да редактировать нет", "Подтверждение", MessageBoxButtons.YesNo);
-            if (result == DialogResult.Yes)
-            {
-                string line = listBox1.SelectedItem.ToString();
-                listBox1.Items.Remove(listBox1.SelectedItem);
-                string[] lines = line.Split(';');
-                string name = lines[0];
-                phoneBook.RemoveContact(name);
-                PhoneBookLoader.Save(phoneBook.GetAllContacts());
-            }
-            else if (result == DialogResult.No)
-            {
-                string line = listBox1.SelectedItem.ToString();
-                string[] lines = line.Split(';');
-                textBox5.Text= lines[0];
-                textBox4.Text = lines[1];
-                oldn = lines[0];
-            }
+            Form1.Proverka(textBox3, textBox3, this.Proverka2);
         }
 
-        private void Edit(object sender, EventArgs e)
+
+        //Добавление контакта
+        private void Dob_contact(object sender, EventArgs e)
         {
-            phoneBook.EditContact(oldn, textBox5.Text, textBox4.Text);
-            PhoneBookLoader.Save(phoneBook.GetAllContacts());
+            try
+            {
+                string name = textBox4.Text;
+                string number = textBox3.Text;
+
+                MessageBox.Show(phoneBook.AddContact(name, number));
+                UpdateList();
+                dob.Visible = false;
+            }
+            catch (Exception ex)
+            {
+
+            }
+            
+        }
+
+        //Изменение контакта
+        private void Edit_contact(object sender, EventArgs e)
+        {
+            try
+            {
+                int index = -1;
+                string name = textBox1.Text;
+                string number = textBox2.Text;
+                index = listBox1.SelectedIndex;
+                MessageBox.Show(phoneBook.ChangeContact(name, number, index));
+                UpdateList();
+                red.Visible = false;
+            }
+            catch (Exception ex)
+            {
+
+            }
+           
+        }
+
+        //Занесение данных при загрузке формы
+        private void Loading_the_app(object sender, EventArgs e)
+        {
+            PhoneBookLoader.Load(phoneBook, "contacts.csv");
             UpdateList();
         }
 
-        private void Proverka2(object sender, EventArgs e)
+        //Поиск контакта
+        private void Search(object sender, EventArgs e)
         {
-            textBox4.TextChanged -= Proverka;
-            string input = Regex.Replace(textBox2.Text, @"[^\d]", "");
-            if (input.Length > 10)
+            try
             {
-                input = input.Substring(0, 10);
+                if (comboBox1.SelectedItem.ToString() == "По имени")
+                {
+                    string name = textBox5.Text;
+                    var foundContacts = phoneBook.GetAllContacts().Where(c => c.Name.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+                    if (foundContacts.Any())
+                    {
+                        string message = "Найденные контакты:\n" + string.Join("\n", foundContacts.Select(c => $"{c.Name}, {c.Phone}"));
+                        MessageBox.Show(message, "Результаты поиска", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Контакты не найдены.", "Результаты поиска", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+
+
+                }
+                else if (comboBox1.SelectedItem.ToString() == "По номеру")
+                {
+                    string phone = textBox6.Text;
+                    var foundContacts = phoneBook.GetAllContacts().Where(c => c.Phone == phone).ToList();
+                    if (foundContacts.Any())
+                    {
+                        string message = "Найденные контакты:\n" + string.Join("\n", foundContacts.Select(c => $"{c.Name}, {c.Phone}"));
+                        MessageBox.Show(message, "Результаты поиска", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Контакты не найдены.", "Результаты поиска", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
             }
-            if (input.Length > 0)
+            catch (Exception ex)
             {
-                if (input.Length > 3)
+
+            }
+            
+        }
+
+        //выбор переменной для поиска
+        private void Parameter_selection(object sender, EventArgs e)
+        {
+            try
+            {
+                if (comboBox1.SelectedItem.ToString() == "По имени")
                 {
-                    input = $"({input.Substring(0, 3)}){input.Substring(3)}";
+                    textBox5.Visible = true;
+                    label9.Visible = true;
+                    textBox6.Visible = false;
+                    label10.Visible = false;
                 }
-                if (input.Length > 8)
+                else if (comboBox1.SelectedItem.ToString() == "По номеру")
                 {
-                    input = $"{input.Substring(0, 8)}-{input.Substring(8)}";
-                }
-                if (input.Length > 11)
-                {
-                    input = $"{input.Substring(0, 11)}-{input.Substring(11)}";
+                    textBox6.Visible = true;
+                    label10.Visible = true;
+                    textBox5.Visible = false;
+                    label9.Visible = false;
                 }
             }
-            textBox4.Text = input;
-            textBox4.SelectionStart = textBox4.Text.Length;
-            textBox4.TextChanged += Proverka;
+            catch (Exception ex)
+            {
+
+            }
+            
+        }
+
+        //Открытие панели редактирования контакта
+        private void редактироватьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            red.Visible = true;
+        }
+
+        //открытие панели добавления контакта
+        private void добавитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            dob.Visible = true;
+        }
+
+        //открытие панели поиска
+        private void найтиКонтактToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            find.Visible = true;
+        }
+
+        //Закрытиевсех панелей
+        private void Close(object sender, EventArgs e)
+        {
+            try
+            {
+                foreach (Control control in this.Controls)
+                {
+                    if (control is Panel && control.Visible)
+                    {
+                        control.Hide();
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+           
+        }
+
+        //Выбор контакта из списка
+        private void Change(object sender, EventArgs e)
+        {
+
+            try
+            {
+
+            }
+            catch (Exception ex)
+            {
+
+            }
+            string[] parts = listBox1.SelectedItem.ToString().Split(';');
+            textBox1.Text = parts[0];
+            textBox2.Text = parts[1];
+        }
+
+        //Проверка на ввод номера
+        private void Prov(object sender, EventArgs e)
+        {
+            Form1.Proverka(textBox6, textBox6, this.Proverka2);
+        }
+
+        //Сохранение в файл
+        private void сохранитьФайлToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                PhoneBookLoader.Save(phoneBook, "contacts.csv");
+                UpdateList();
+                MessageBox.Show("Данные сохранены");
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+           
+        }
+
+
+        //Удаление контакта
+   
+        private void Delete_contact(object sender, EventArgs e)
+        {
+            try
+            {
+                phoneBook.DeleteContact(listBox1.SelectedItem.ToString());
+                listBox1.Items.Remove(listBox1.SelectedItem);
+                UpdateList();
+            }
+            catch(Exception ex)
+            {
+
+            }
+            
+        }
+        //Выход из программы
+        private void выйтиToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DialogResult dr = MessageBox.Show("Вы действительно хотите выйти из программы", "Подтверждение", MessageBoxButtons.YesNo);
+            if (dr == DialogResult.Yes)
+            {
+                this.Close();
+            }
         }
     }
 }

@@ -9,44 +9,62 @@ namespace yp_2
 {
     internal class PhoneBook
     {
-        private List<Contact> contacts = new List<Contact>();
+        //поле класса
+        List<Contact> contacts = new List<Contact>();
 
-        public void AddContact(Contact contact)
+        //Поиск контактов, возвращает индекс контакта
+        public int SearchContact(string name)
         {
-            contacts.Add(contact);
-        }
-        public void AddContact(string name,string contact)
-        {
-            Contact ss = new Contact(name, contact);
-            contacts.Add(ss);
-        }
-
-        public void RemoveContact(string name)
-        {
-            contacts.RemoveAll(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-        }
-
-        public Contact FindContact(string name)
-        {
-            return contacts.FirstOrDefault(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            foreach (var contact in contacts)
+            {
+                if (contact.Name.ToLower() == name.ToLower())
+                {
+                    return contacts.IndexOf(contact);
+                }
+            }
+            return -1;
         }
 
+        //Изменение контакта
+        public string ChangeContact(string name, string phone, int index)
+        {
+            Contact contact = new Contact(name, phone);
+            if (contacts.Contains(contact))
+                return "Данный контакт уже существует";
+            else
+            {
+                contacts[index] = contact;
+                return "Контакт изменен";
+            }
+        }
+
+        //Добавление контактов
+        public string AddContact(string name, string number)
+        {
+
+            Contact contact = new Contact(name, number);
+            if (contacts.Contains(contact))
+                return "Данный контакт уже существует";
+            else
+            {
+                contacts.Add(contact);
+                return "Контакт добавлен";
+            }
+        }
+
+        //Удаление контактов
+        public void DeleteContact(string con)
+        {
+            string[] parts = con.Split(';');
+            contacts = contacts
+                .Where(contact => (contact.Name != parts[0].Trim() && contact.Phone != parts[1].Trim()))
+                .ToList();
+        }
+
+        //Получение списка контактов
         public List<Contact> GetAllContacts()
         {
             return contacts;
-        }
-
-        public bool EditContact(string oldName, string newName, string newContact)
-        {
-            
-            Contact contactToEdit = FindContact(oldName);
-            if (contactToEdit != null)
-            {
-                contactToEdit.Name = newName;
-                contactToEdit.Phone = newContact; 
-                return true; 
-            }
-            return false; 
         }
     }
 }

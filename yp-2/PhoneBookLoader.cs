@@ -12,63 +12,30 @@ namespace yp_2
 {
     static class PhoneBookLoader
     {
+      
 
-        public static void Load(PhoneBook phoneBook)
+        //Загрузка данных из файла
+        public static void Load(PhoneBook phoneBook, string fileName)
         {
-            Excel.Application excelApp = new Excel.Application();
-            string filePath = @"C:\PLOSKIKH\yp-2\bin\Debug\contacts.xlsx";
-            Excel.Workbook workbook = excelApp.Workbooks.Open(filePath);
-            Excel.Worksheet worksheet = workbook.Sheets[1];
-
-            int rowCount = worksheet.UsedRange.Rows.Count;
-
-            for(int i = 1; i <= rowCount; i++)
+            StreamReader sr = File.OpenText(fileName);
+            while (!sr.EndOfStream)
             {
-                Contact con = new Contact();
-                
-              
-                con.Name = worksheet.Cells[i, 1].Value.ToString();
-                con.Phone = worksheet.Cells[i, 2].Value.ToString();
-                phoneBook.AddContact(con);
+
+                string[] s = sr.ReadLine().Split(';');
+                phoneBook.AddContact(s[0], s[1]);
             }
-
-
-
-            excelApp.Visible = false;
-            workbook.Close(false);
-            excelApp.Quit();
-
-
-            System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
-            System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
-
-
+            sr.Close();
         }
 
-       
-
-
-
-        public static void Save(List<Contact> contact)
+        //Запись данных в файл
+        public static void Save(PhoneBook phoneBook, string fileName)
         {
-            Excel.Application excelApp = new Excel.Application();
-            string filePath = @"C:\PLOSKIKH\yp-2\bin\Debug\contacts.xlsx";
-            Excel.Workbook workbook = excelApp.Workbooks.Open(filePath);
-            Excel.Worksheet worksheet = workbook.Sheets[1];
-
-            for (int i = 0; i < contact.Count; i++)
+            StreamWriter sr = File.CreateText(fileName);
+            foreach (var contact in phoneBook.GetAllContacts())
             {
-                worksheet.Cells[i + 1, 1].Value = contact[i].Name; 
-                worksheet.Cells[i + 1, 2].Value = contact[i].Phone; 
+                sr.WriteLine($"{contact.Name};{contact.Phone}");
             }
-
-            workbook.Save();
-            workbook.Close();
-            excelApp.Quit();
-
-            System.Runtime.InteropServices.Marshal.ReleaseComObject(worksheet);
-            System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
-            System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
+            sr.Close();
         }
     }
 }
